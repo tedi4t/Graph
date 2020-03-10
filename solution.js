@@ -406,12 +406,7 @@ function edgesInside(A) {
 
 function findPointsPower(A) {
   const inside = edgesInside(A);
-  const outside = edgesOutside(A);
-  const power = [];
-  for (let i = 0; i < n; i++){
-    power[i] = inside[i] + outside[i];
-  }
-  return power;
+  return inside;
 }
 
 function findSystemPower(A) {
@@ -430,8 +425,13 @@ function handingPoints(A) {
 }
 
 function notConnected(A) {
+  const inside = edgesInside(A);
+  const outside = edgesOutside(A);
+  const power = [];
+  for (let i = 0; i < n; i++){
+    power[i] = inside[i] + outside[i];
+  }
   const notConnected = [];
-  const power = findPointsPower(A);
   for (let i = 0; i < n; i++) {
     if (power[i] === 0)
       notConnected.push(i + 1);
@@ -462,7 +462,7 @@ const B = convertInUndirected(A);
 
 const inside = edgesInside(A);
 const outside = edgesOutside(A);
-const power = findPointsPower(A);
+const power = findPointsPower(B);
 const handing = handingPoints(A);
 const isolated = notConnected(A);
 const systemPower = findSystemPower(A);
