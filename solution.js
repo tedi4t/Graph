@@ -4,42 +4,69 @@
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
 
-document.getElementById('buttonUnDirected').addEventListener('click', buildOnArr, null);
-document.getElementById('buttonDirected').addEventListener('click', buildOnArrDirected, null);
+const canvas2 = document.getElementById("myCanvas2");
+const ctx2 = canvas2.getContext("2d");
 
-const width = window.innerWidth;
-const height = window.innerHeight;
-canvas.height = height;
-canvas.width = width;
+const cofSmaller = 0.94;
+const cofBigger = 0.42;
+
+document.getElementById('direction').addEventListener('click', changeDirection, null);
+document.getElementById('2Lab').addEventListener('click', getSecondLab, null);
+
+const windowHeight = window.innerHeight;
+const windowWidth = window.innerWidth;
+
+if (windowWidth < 450) {
+  canvas.width = windowWidth * cofSmaller;
+  canvas.height = canvas.width;
+  canvas2.width = windowWidth * cofSmaller;
+  canvas2.height = canvas.width;
+} else {
+  canvas.width = windowWidth * cofBigger;
+  canvas.height = canvas.width;
+  canvas2.width = windowWidth * cofBigger;
+  canvas2.height = canvas.width;
+}
+
+if (windowWidth < 600) {
+  canvas.width = windowWidth * 0.92;
+  canvas.height = canvas.width;
+  canvas2.width = windowWidth * 0.92;
+  canvas2.height = canvas2.width;
+}
+
+const height = canvas.height;
+const width = canvas.width;
+console.log({ wH: windowHeight, wW: windowWidth, height: canvas.height, width: canvas.width });
 
 const n = 12; //amount of points
-const mainX = canvas.width / 2; //building graphs
-const mainY = canvas.height / 2; //building graphs
-const mainRadius = 240; //building graphs
-const ballRadius = 25;
+const mainX = width / 2; //building graphs
+const mainY = height / 2; //building graphs
+const mainRadius = height * 0.4; //building graphs
+const ballRadius = mainRadius * 0.1;
 const alpha = 2 * Math.PI / (n - 1); // building graphs
 const digitColor = '#0e014b';
+const ballColor = '#36bddd';
 const distanceFromCentre =  1.25 * ballRadius;
 const seed = 9327; // taken from the condition of the problem
-const s = seed.toString().split('').map(val => parseInt(val));
-const koef = 1 - s[2] * 0.02 - s[3] * 0.005 - 0.25; //koef taken from the condition of the problem
 const points = []; //Array of poins
 const letterSize = ballRadius * 0.4;
+let directed = true;
 
 ctx.textBaseline = 'middle';
 ctx.textAlign = 'center';
-ctx.font = `20px Times New Roman`;
+ctx.font = `15px Times New Roman`;
 
 
 const A = [
-  [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-  [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0],
-  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
   [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
@@ -69,7 +96,7 @@ const A = [
 class Connections {
   constructor() {
     this.betha = Math.PI / 12; //angle for arrow's head
-    this.arrowLenth = 20; //connections
+    this.arrowLenth = ballRadius * 0.8; //connections
     this.angleEachOther = Math.PI / 14; //connections
     this.arrowColor = '#dd0300';
   }
@@ -287,6 +314,106 @@ class Connections {
   };
 }
 
+class SecondLab {
+  constructor(A) {
+    this.A = A;
+  }
+
+  edgesOutside(A) {
+    const outside = [];
+    for (const index in A) {
+      outside[index] = A[index].reduce((acc, val) => acc + val);
+    }
+    return outside;
+  }
+
+  edgesInside(A) {
+    const inside = [];
+    for (let index = 0; index < n; index++) {
+      const insidePoint = [];
+      for (let j = 0; j < n; j++) {
+        insidePoint.push(A[j][index]);
+      }
+      inside[index] = insidePoint.reduce((acc, val) => acc + val);
+    }
+    return inside;
+  }
+
+  findPointsPower(A) {
+    const inside = this.edgesInside(A);
+    const outside = this.edgesOutside(A);
+    const power = [];
+    for (const index in inside) {
+      power[index] = inside[index] + outside[index];
+    }
+    return power;
+  }
+
+  findSystemPower(A) {
+    const pointsPower = this.findPointsPower(A);
+    if (pointsPower.filter(item => item === pointsPower[0]).length === pointsPower.length)
+      return pointsPower[0];
+  }
+
+  handingPoints(A) {
+    const B = convertInUndirected(clone(A));
+    const power = this.findPointsPower(B).filter(item => item === 1);
+    return power;
+  }
+
+  notConnected(A) {
+    const inside = this.edgesInside(A);
+    const outside = this.edgesOutside(A);
+    const power = [];
+    for (let i = 0; i < n; i++){
+      power[i] = inside[i] + outside[i];
+    }
+    const notConnected = [];
+    for (let i = 0; i < n; i++) {
+      if (power[i] === 0)
+        notConnected.push(i + 1);
+    }
+    return notConnected;
+  }
+
+  getResults() {
+    const inside = this.edgesInside(this.A);
+    const outside = this.edgesOutside(this.A);
+    const power = this.findPointsPower(this.A);
+    const handing = this.handingPoints(this.A);
+    const isolated = this.notConnected(this.A);
+    const systemPower = this.findSystemPower(this.A);
+
+    const results = [];
+
+    results.push(`points\' degrees inside and outside`);
+    for (const index in inside) {
+      results.push(`point ${parseInt(index) + 1}: inside: ${inside[index]}, outside: ${outside[index]}`);
+    }
+    results.push(`points\' degrees`);
+
+    for (const index in power) {
+      results.push(`point ${parseInt(index) + 1}: degree: ${power[index]}`);
+    }
+
+    results.push(handing.length ? `handing points: ${handing}`: `No handing points`);
+    results.push(isolated.length ? `isolated points: ${isolated}` : `No isolated points`);
+    results.push(systemPower ? `system's power is ${systemPower}` : `No system power`);
+    return results;
+  }
+
+}
+
+function changeDirection() {
+  if (directed) {
+    buildOnArrDirected();
+    directed = false;
+  } else {
+    buildOnArr();
+    directed = true;
+  }
+}
+
 const buildCircle = (point, radius, fillStyle) => {
   let { index, x, y } = point;
   ctx.beginPath();
@@ -302,25 +429,9 @@ const buildCircle = (point, radius, fillStyle) => {
   ctx.closePath();
 };
 
-function buildArr() {
-  const A = [];
-
-  for (let index = 0; index < n; index++) {
-    const ryad = [];
-    for (let pos = 0; pos < n; pos++) {
-      let rand1 = Math.random();
-      let rand2 = Math.random();
-      const val = Math.trunc(koef * (rand1 + rand2));
-      ryad.push(Math.trunc(val));
-    }
-    A.push(ryad);
-  }
-  return A;
-}
-
 const buildGraphs = (alpha) => {
   let angle = 0;
-  const color = '#36bddd';
+  const color = ballColor;
   const point = {index: 0, x: mainX, y: mainY}
   buildCircle(point, ballRadius, color);
   points.push({index: 0, x: mainX, y: mainY});
@@ -334,9 +445,6 @@ const buildGraphs = (alpha) => {
   }
 };
 
-function buildSimetrical(A) {
-
-}
 
 function buildOnArrDirected() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -384,60 +492,6 @@ buildOnArrDirected(A);
 - всі ізольовані вершини - вершини які ні з ким не з'єднані
  */
 
-function edgesOutside(A) {
-  const outside = [];
-  for (const index in A) {
-    outside[index] = A[index].reduce((acc, val) => acc + val);
-  }
-  return outside;
-}
-
-function edgesInside(A) {
-  const inside = [];
-  for (let index = 0; index < n; index++) {
-    const insidePoint = [];
-    for (let j = 0; j < n; j++) {
-      insidePoint.push(A[j][index]);
-    }
-    inside[index] = insidePoint.reduce((acc, val) => acc + val);
-  }
-  return inside;
-}
-
-function findPointsPower(A) {
-  const inside = edgesInside(A);
-  return inside;
-}
-
-function findSystemPower(A) {
-  const pointsPower = findPointsPower(A);
-  if (pointsPower.filter(item => item === pointsPower[0]).length === pointsPower.length)
-    return pointsPower[0];
-}
-
-function handingPoints(A) {
-  const handing = [];
-  for (let i = 0; i < n; i++) {
-    if (A[i][i] === 1)
-      handing.push(i + 1);
-  }
-  return handing;
-}
-
-function notConnected(A) {
-  const inside = edgesInside(A);
-  const outside = edgesOutside(A);
-  const power = [];
-  for (let i = 0; i < n; i++){
-    power[i] = inside[i] + outside[i];
-  }
-  const notConnected = [];
-  for (let i = 0; i < n; i++) {
-    if (power[i] === 0)
-      notConnected.push(i + 1);
-  }
-  return notConnected;
-}
 
 function clone(A) {
   const B = [];
@@ -458,21 +512,32 @@ function convertInUndirected(A) {
   return B;
 }
 
-const B = convertInUndirected(A);
+function displayText(text) {
+  let startX = 10;
+  let startY = 15;
+  let distance;
+  if (windowWidth < 1000) {
+    console.log('smaller');
+    canvas2.height = 12 * text.length + 30;
+    ctx2.font = '10px Arial, serif';
+    distance = 12;
+  } else {
+    ctx2.font = '14px Arial, serif';
+    distance = 16;
+  }
+  for (const str of text) {
+    ctx2.fillText(str, startX, startY);
+    startY += distance;
+  }
+}
 
-const inside = edgesInside(A);
-const outside = edgesOutside(A);
-const power = findPointsPower(B);
-const handing = handingPoints(A);
-const isolated = notConnected(A);
-const systemPower = findSystemPower(A);
+function getSecondLab() {
+  const secondLab = new SecondLab(A);
+  const results = secondLab.getResults();
+  displayText(results);
+}
 
-console.table('connections inside: ', inside);
-console.table('connections outside: ', outside);
-console.table('points\' power: ', power);
-console.log('handing points: ', handing);
-console.log(isolated.length ? `isolated points: ${isolated}` : `No isolated points`);
-console.log(systemPower ? `system's power is ${systemPower}` : `No system power`);
+//console.log(B);
 
 //console.timeEnd('experiment');
 
