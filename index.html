@@ -1,21 +1,44 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Gamedev Canvas Workshop</title>
-    <style>
-        * { padding: 0; margin: 0; }
-        canvas { background: #eee; display: block; margin: 0 auto; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Document</title>
+
 </head>
 <body>
 
-<canvas id="myCanvas"></canvas>
+    <section>
+        <div class="container">
+            <canvas id="myCanvas"></canvas>
+        </div>
 
-    <button id="buttonDirected">directed</button>
-    <button id="buttonUnDirected">non - directed</button>
+        <div class="container">
+            <canvas id="myCanvas2"></canvas>
+        </div>
 
-<script src="solution.js"></script>
+    </section>
+
+    <section>
+        <div class="half-container">
+            <center>
+                <button id="direction" class="button-direction">Directed / Undirected</button>
+            </center>
+
+        </div>
+        <div class="half-container">
+            <button id="2Lab" class="up-button-lab clearfix">Second lab</button>
+            <button id="3Lab" class="up-button-lab clearfix">Third lab</button>
+            <button id="4Lab" class="up-button-lab clearfix">Fourth lab</button>
+            <button id="5Lab" class="down-button-lab clearfix">Fifth lab</button>
+            <button id="6Lab" class="down-button-lab clearfix">Sixth lab</button>
+        </div>
+    </section>
+
+    <script src="solution.js"></script>
 
 </body>
 </html>
