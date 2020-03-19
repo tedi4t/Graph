@@ -23,7 +23,7 @@ canvas, canvas2 {
 .container {
   box-sizing: border-box;
   float: left;
-  margin: 3%;
+  margin: 3.5%;
   margin-top: 1.5%;
   margin-bottom: 1.5%;
 }
@@ -40,6 +40,7 @@ canvas, canvas2 {
   margin-right: 3.5%;
   float: left;
   position: relative;
+  text-align: center;
 }
 
 .half-container:after {
@@ -75,13 +76,33 @@ canvas, canvas2 {
   float: left;
 }
 
-.up-button-lab:after {
-  content: "";
-  display: block;
-  clear: both;
-}
-
 @media screen and (max-width: 600px) {
+  .half-container {
+    width: 100%;
+    position: relative;
+  }
 
+  .up-button-lab {
+    width: 90%;
+    margin: 2% auto;
+  }
 
+  .down-button-lab {
+    width: 90%;
+    margin: 2% auto;
+  }
+
+  .button-direction {
+    width: 90%;
+    margin: 2% auto;
+  }
+
+  .container {
+    width: 100%;
+    margin: 2% auto;
+  }
+
+  canvas, canvas2 {
+    margin: 2% auto;
+  }
 }
