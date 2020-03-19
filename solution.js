@@ -685,7 +685,7 @@ class ThirdLab {
     const waysThreeLength = this.findWayWithExcludeRepeating(3);
     const reachabilityMatrix = this.reachabilityMatrix(this.A);
     const connectivityMatrix = this.connectivityMatrix(this.A);
-        const componentas = this.buildCondensationMatrix(this.A);
+    const componentas = this.findComponentas(this.A);
     // console.log(componentas);
 
     const results = [];
