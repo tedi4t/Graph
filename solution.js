@@ -755,7 +755,10 @@ class ThirdLab {
 
   displayResults() {
     const results = this.getResults();
-    const positionY = 16 * results.length;
+    let positionY;
+    if (windowWidth < 1000)
+      positionY = 12 * results.length;
+    else positionY = 16 * results.length;
     displayText(ctx2, results);
 
     this.buildCondensationGraph(this.A, positionY);
