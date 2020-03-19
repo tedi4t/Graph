@@ -12,6 +12,8 @@ const cofBigger = 0.42;
 
 document.getElementById('direction').addEventListener('click', changeDirection, null);
 document.getElementById('2Lab').addEventListener('click', getSecondLab, null);
+document.getElementById('3Lab').addEventListener('click', getThirdLab, null);
+document.getElementById('clear').addEventListener('click', clear, null);
 
 const windowHeight = window.innerHeight;
 const windowWidth = window.innerWidth;
@@ -37,7 +39,7 @@ if (windowWidth < 600) {
 
 const height = canvas.height;
 const width = canvas.width;
-console.log({ wH: windowHeight, wW: windowWidth, height: canvas.height, width: canvas.width });
+// console.log({ wH: windowHeight, wW: windowWidth, height: canvas.height, width: canvas.width });
 
 const n = 12; //amount of points
 const mainX = width / 2; //building graphs
@@ -49,28 +51,32 @@ const digitColor = '#0e014b';
 const ballColor = '#36bddd';
 const distanceFromCentre =  1.25 * ballRadius;
 const seed = 9327; // taken from the condition of the problem
-const points = []; //Array of poins
+// const points = []; //Array of poins
 const letterSize = ballRadius * 0.4;
-let directed = true;
+let directed = false;
 
 ctx.textBaseline = 'middle';
 ctx.textAlign = 'center';
 ctx.font = `15px Times New Roman`;
 
+ctx2.textBaseline = 'middle';
+ctx2.textAlign = 'center';
+ctx2.font = `15px Times New Roman`;
+
 
 const A = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0],
-  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
   [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+  [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
 
@@ -94,19 +100,20 @@ const A = [
  */
 
 class Connections {
-  constructor() {
+  constructor(ballRadius) {
     this.betha = Math.PI / 12; //angle for arrow's head
     this.arrowLenth = ballRadius * 0.8; //connections
     this.angleEachOther = Math.PI / 14; //connections
     this.arrowColor = '#dd0300';
+    this.ballRadius = ballRadius;
   }
 
-  connectPoints (point1, point2) {
-    ctx.beginPath();
-    ctx.moveTo(point1.x, point1.y);
-    ctx.lineTo(point2.x, point2.y);
-    ctx.closePath();
-    ctx.stroke();
+  connectPoints (context, point1, point2) {
+    context.beginPath();
+    context.moveTo(point1.x, point1.y);
+    context.lineTo(point2.x, point2.y);
+    context.closePath();
+    context.stroke();
   }
 
   findRight(context, from, to, radius, angle) {
@@ -147,6 +154,7 @@ class Connections {
   }
 
   crossesBall(graphs, from, to, point3, bR) {
+    // console.log({from, to});
     const {point1, point2} = this.findCoordinates(from, to);
     let xMin = Math.min(point1.x, point3.x) - bR;
     let xMax = Math.max(point1.x, point3.x) + bR;
@@ -194,8 +202,8 @@ class Connections {
 
   drawSideLine(context, from, to, point3, radius) {
     const {point1, point2} = this.findCoordinates(point3, from);
-    this.connectPoints(from, point3);
-    this.connectPoints(point3, to);
+    this.connectPoints(context, from, point3);
+    this.connectPoints(context, point3, to);
     this.drawArrowhead(context, point3, point2, radius);
   }
 
@@ -214,24 +222,25 @@ class Connections {
 
   findCoordinates(from, to) {
     let xCentre, yCentre;
+    // console.log({from ,to});
     let angle = Math.atan((to.y - from.y) / (to.x - from.x));
 
     if (to.x < from.x) {
-      xCentre = to.x + ballRadius * Math.cos(angle);
-      yCentre = to.y + ballRadius * Math.sin(angle);
+      xCentre = to.x + this.ballRadius * Math.cos(angle);
+      yCentre = to.y + this.ballRadius * Math.sin(angle);
     } else {
-      xCentre = to.x - ballRadius * Math.cos(angle);
-      yCentre = to.y - ballRadius * Math.sin(angle);
+      xCentre = to.x - this.ballRadius * Math.cos(angle);
+      yCentre = to.y - this.ballRadius * Math.sin(angle);
     }
 
     let xCentre1, yCentre1;
     angle = Math.atan((to.y - from.y) / (to.x - from.x));
     if (to.x < from.x) {
-      xCentre1 = from.x - ballRadius * Math.cos(angle);
-      yCentre1 = from.y - ballRadius * Math.sin(angle);
+      xCentre1 = from.x - this.ballRadius * Math.cos(angle);
+      yCentre1 = from.y - this.ballRadius * Math.sin(angle);
     } else {
-      xCentre1 = from.x + ballRadius * Math.cos(angle);
-      yCentre1 = from.y + ballRadius * Math.sin(angle);
+      xCentre1 = from.x + this.ballRadius * Math.cos(angle);
+      yCentre1 = from.y + this.ballRadius * Math.sin(angle);
     }
     const point1 = {x: xCentre1, y: yCentre1};
     const point2 = {x: xCentre, y: yCentre};
@@ -249,7 +258,7 @@ class Connections {
     yCentre = to.y;
 
     context.beginPath();
-    ctx.fillStyle = this.arrowColor;
+    context.fillStyle = this.arrowColor;
     context.moveTo(xCentre, yCentre);
 
     let gamma = ((Math.PI / 2) - angle - this.betha);
@@ -289,10 +298,10 @@ class Connections {
     const x = point.x - sqrt2*ballRadius*Math.cos(angle);
     let y = point.y + sqrt2*ballRadius*Math.sin(angle);
     if (firstPoint) y += points[0].y - points[1].y;
-    ctx.beginPath();
-    ctx.arc(x, y, ballRadius, alpha, betha, true);
-    ctx.stroke();
-    ctx.closePath();
+    context.beginPath();
+    context.arc(x, y, ballRadius, alpha, betha, true);
+    context.stroke();
+    context.closePath();
   }
 
   inItselfDirected(context, point, ballRadius) {
@@ -308,8 +317,10 @@ class Connections {
   }
 
   drawArrowedLine (context, from, to, radius = this.arrowLenth) {
+    // console.clear();
+    // console.log({from, to});
     const {point1, point2} = this.findCoordinates(from, to);
-    this.connectPoints(point1, point2);
+    this.connectPoints(context, point1, point2);
     this.drawArrowhead(context, point1, point2, radius);
   };
 }
@@ -404,85 +415,444 @@ class SecondLab {
 
 }
 
+class ThirdLab {
+  constructor(A) {
+    this.A = A;
+  }
+
+  TransformInDirectionsFromPoint() {
+    this.directions = [];
+    for (const i in this.A) {
+      this.directions[i] = [];
+      const arr = this.A[i];
+      for (const j in arr) {
+        if (arr[j] === 1 && i !== j)
+          this.directions[i].push(j);
+      }
+    }
+    // console.log(this.directions);
+  }
+
+  findWay(length) {
+    if (!this.directions)
+      this.TransformInDirectionsFromPoint();
+    let lenghtWays = [];
+    for (let i = 0; i < this.A.length; i++)
+      lenghtWays.push([i]);
+    for (let counter = 0; counter < length; counter++) {
+      for (const prevPoints of lenghtWays) {
+        const lastPoint = prevPoints[prevPoints.length - 1];
+        const nextPoints = this.directions[lastPoint];
+        for (const nextPoint of nextPoints) {
+          lenghtWays.push([...prevPoints, nextPoint]);
+        }
+        lenghtWays = lenghtWays.filter(item => item.length === counter + 2);
+      }
+    }
+    return lenghtWays.map(arr => arr.map(item => parseInt(item) + 1));
+  }
+
+  findWayWithExcludeRepeating(length) {
+    const ways = this.findWay(length);
+    for (const index in ways) {
+      const arr = ways[index];
+      for (let i = 0; i < 4; i++) {
+        const item1 = arr[i];
+        const item2 = arr[i + 1];
+        const item3 = arr[i + 2];
+        const item4 = arr[i + 3];
+        if (item1 === item3 && item2 === item4)
+          ways.splice(index, 1);
+      }
+    }
+    // console.log(ways);
+    return ways;
+  }
+
+  findProduct(matrix1, matrix2) {
+    const len = matrix1.length;
+
+    const product = [];
+    for (let i = 0; i < len; i++)
+      product[i] = [];
+
+    for (let i = 0; i < len; i++) {
+      for (let j = 0; j < len; j++) {
+        product[i][j] = 0;
+        for (let changing = 0; changing < len; changing++) {
+          product[i][j] += matrix1[i][changing] * matrix2[changing][j];
+        }
+      }
+    }
+    return product;
+  }
+
+  findMatrixInPower(matrix, power) {
+    let product = matrix;
+    for (let i = 0; i < power - 1; i++) {
+      product = this.findProduct(product, matrix);
+    }
+    return product;
+  }
+
+  uniteMatrix(matrix1, matrix2) {
+    const len = matrix1.length;
+    const united = [];
+    for (let i = 0; i < len; i++) {
+      united[i] = [];
+      for (let j = 0; j < len; j++) {
+        if (matrix1[i][j] === 1 || matrix2[i][j] === 1)
+          united[i][j] = 1; else united[i][j] = 0;
+      }
+    }
+    return united;
+  }
+
+  transponateMatrix(matrix) {
+    const transponated = [];
+    const len = matrix.length;
+    for (let i = 0; i < len; i++) {
+      transponated[i] = [];
+      for (let j = 0; j < len; j++) {
+        transponated[i][j] = matrix[j][i];
+      }
+    }
+    return transponated;
+  }
+
+  reachabilityMatrix(matrix) {
+    let reached = [];
+    const len = matrix.length;
+    for (let i = 0; i < len; i++) {
+      reached[i] = [];
+      for (let j = 0; j < len; j++)
+        (i === j) ? reached[i][j] = 1 : reached[i][j] = 0;
+    }
+    reached = this.uniteMatrix(reached, matrix);
+    for (let i = 0; i < len - 1; i++) {
+      reached = this.uniteMatrix(reached, this.findMatrixInPower(matrix, i + 1));
+    }
+    return reached;
+  }
+
+  connectivityMatrix(matrix) {
+    const reached = this.reachabilityMatrix(matrix);
+    const transponated = this.transponateMatrix(reached);
+    const len = matrix.length;
+    const connective = [];
+    for (let i = 0; i < len; i++) {
+      connective[i] = [];
+      for (let j = 0; j < len; j++)
+        connective[i][j] = reached[i][j] * transponated[i][j];
+    }
+    return connective;
+  }
+
+  findPossibleDirectionsInConnectivity(matrix) {
+    const connectiveMatrix = this.connectivityMatrix(matrix);
+    const directions = [];
+    const len = connectiveMatrix.length;
+    for (let i = 0; i < len; i++) {
+      for (let j = 0; j < len; j++) {
+        if (connectiveMatrix[i][j] === 1)
+          directions.push([i, j]);
+      }
+    }
+    return directions.sort((a, b) => a[0] - b[0]);
+  }
+
+  // sortByFirstElement(directions) {
+  //   const sortedDirections = [];
+  //   for (const arr of directions) {
+  //     const index = arr[0];
+  //     sortedDirections[index] = arr;
+  //   }
+  //   return sortedDirections;
+  // }
+
+  pointIsIncluded (arr, point) {
+    return (arr.filter(item => item == point).length > 0);
+  }
+
+  includes(dirs, item) {
+    for (const arr of dirs) {
+      if (arr[0] == item[0] && arr[1] == item[1])
+        return true;
+    }
+    return false;
+  }
+
+  findComponentas(matrix) {
+    const directions = this.findPossibleDirectionsInConnectivity(matrix);
+    // console.log(directions);
+    const pointsLeft = [];
+    for (const pointNumber in matrix)
+      pointsLeft.push(parseInt(pointNumber));
+    const componentas = [];
+    // console.log(pointsLeft);
+    while(pointsLeft.length > 0) {
+      const pointsOfBlock = [pointsLeft[0]];
+      let added = true;
+      while (added) {
+        added = false;
+        for (const checkingPoint of pointsLeft) {
+          if (!added && !this.pointIsIncluded(pointsOfBlock, checkingPoint)) {
+            let suitable = true;
+            for (const blockPoint of pointsOfBlock) {
+              const condition = (this.includes(directions, [checkingPoint, blockPoint]) && this.includes(directions, [checkingPoint, blockPoint]));
+              // console.log({pointsOfBlock, dir: [checkingPoint, blockPoint], condition});
+              if (!condition)
+                suitable = false;
+            }
+            if (suitable) {
+              pointsOfBlock.push(checkingPoint);
+              added = true;
+            }
+          }
+        }
+        // console.log({pointsOfBlock, pointsLeft, added});
+        if (!added) {
+          componentas.push(pointsOfBlock);
+          for (const point of pointsOfBlock) {
+            pointsLeft.splice(pointsLeft.indexOf(point), 1);
+          }
+        }
+      }
+    }
+
+    return componentas;
+  }
+
+  buildCondensationMatrix(matrix) {
+    const componentas = this.findComponentas(matrix);
+    const len = componentas.length;
+    const condensationMatrix = [];
+    for (let i = 0; i < len; i++) {
+      condensationMatrix[i] = [];
+      for (let j = 0; j < len; j++)
+        condensationMatrix[i][j] = 0;
+    }
+    for (const curCondensInd in componentas) {
+      for (let checkingInd = curCondensInd; checkingInd < len; checkingInd ++) {
+        let connected = false;
+        for (const firstComponentaPoint of componentas[curCondensInd]) {
+          for (const secondComponentaPoint of componentas[checkingInd]) {
+            if (!connected && curCondensInd !== checkingInd) {
+              if (matrix[firstComponentaPoint][secondComponentaPoint] === 1) {
+                condensationMatrix[curCondensInd][checkingInd] = 1;
+                connected = true;
+              } else if (matrix[secondComponentaPoint][firstComponentaPoint] === 1) {
+                condensationMatrix[checkingInd][curCondensInd] = 1;
+                connected = true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return condensationMatrix;
+  }
+
+  buildCondensationGraph(matrix, startY) {
+    ctx2.textBaseline = 'middle';
+    ctx2.textAlign = 'center';
+    ctx2.font = `15px Times New Roman`;
+    let angle = 0;
+    const condensationMatrix = this.buildCondensationMatrix(matrix);
+    const radius = mainRadius;
+    const newBallRadius = (ballRadius);
+    const alpha = 2 * Math.PI / condensationMatrix.length;
+    const centreX = canvas2.width / 2;
+    const centreY = startY + radius * 1.2;
+    const points = [];
+    for (let index = 0; index < condensationMatrix.length; index++) {
+      const x = centreX - (radius * Math.sin(angle));
+      const y = centreY - (radius * Math.cos(angle));
+      const point = {index, x, y};
+      points.push(point);
+      // buildCircle(ctx2, point, newBallRadius, ballColor);
+      angle += alpha;
+    }
+    buildOnArrDirected(ctx2, condensationMatrix, points, ballRadius);
+    console.log({radius, centreX, centreY, points});
+  }
+
+  getResults() {
+    const secondLab = new SecondLab(this.A);
+    const inside = secondLab.edgesInside(this.A);
+    const outside = secondLab.edgesOutside(this.A);
+    const waysTwoLength = this.findWayWithExcludeRepeating(2);
+    const waysThreeLength = this.findWayWithExcludeRepeating(3);
+    const reachabilityMatrix = this.reachabilityMatrix(this.A);
+    const connectivityMatrix = this.connectivityMatrix(this.A);
+        const componentas = this.buildCondensationMatrix(this.A);
+    // console.log(componentas);
+
+    const results = [];
+
+    results.push(`The adjacency matrix`);
+    for (let arr of this.A)
+      results.push(`[${arr}]`);
+
+    results.push(``);
+
+    results.push(`points\' degrees inside and outside`);
+    for (const index in inside) {
+      results.push(`point ${parseInt(index) + 1}: inside: ${inside[index]}, outside: ${outside[index]}`);
+    }
+
+    results.push(``);
+
+    results.push(`Ways of length 2`);
+
+    for (let index = 0; index < waysTwoLength.length;) {
+      if (waysTwoLength[index + 1] && waysTwoLength[index + 2])
+        results.push(`[${waysTwoLength[index]}], [${waysTwoLength[index + 1]}], [${waysTwoLength[index + 2]}]`);
+      else if (waysTwoLength[index + 1])
+        results.push(`[${waysTwoLength[index]}], [${waysTwoLength[index + 1]}]`);
+          else results.push(`[${waysTwoLength[index]}]`);
+      index += 3;
+    }
+
+    results.push(``);
+
+    results.push(`Ways of length 3`);
+
+    for (let index = 0; index < waysThreeLength.length;) {
+      if (waysThreeLength[index + 1] && waysThreeLength[index + 2])
+        results.push(`[${waysThreeLength[index]}], [${waysThreeLength[index + 1]}], [${waysThreeLength[index + 2]}]`);
+      else if (waysThreeLength[index + 1])
+        results.push(`[${waysThreeLength[index]}], [${waysThreeLength[index + 1]}]`);
+      else results.push(`[${waysThreeLength[index]}]`);
+      index += 3;
+    }
+
+    results.push(``);
+
+    results.push(`reachability matrix`);
+
+    for (const arr of reachabilityMatrix) {
+      results.push(`[${arr}]`);
+    }
+
+    results.push(``);
+
+    results.push(`connectivity Matrix`);
+
+    for (const arr of connectivityMatrix) {
+      results.push(`[${arr}]`);
+    }
+
+    results.push(``);
+
+    results.push(`Componentas`);
+
+    for (let index = 0; index < componentas.length; index++)
+      results.push(`[${componentas[index]}]`);
+
+    return results;
+  }
+
+  displayResults() {
+    const results = this.getResults();
+    const positionY = 16 * results.length;
+    displayText(ctx2, results);
+
+    this.buildCondensationGraph(this.A, positionY);
+  }
+}
+
 function changeDirection() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (directed) {
-    buildOnArrDirected();
+    buildOnArrDirected(ctx, A, points, ballRadius);
     directed = false;
   } else {
-    buildOnArr();
+    buildOnArr(ctx, A);
     directed = true;
   }
 }
 
-const buildCircle = (point, radius, fillStyle) => {
+const buildCircle = (context, point, radius, fillStyle) => {
   let { index, x, y } = point;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = fillStyle;
-  ctx.fill();
-  ctx.fillStyle = digitColor;
+  context.beginPath();
+  context.arc(x, y, radius, 0, Math.PI * 2);
+  context.fillStyle = fillStyle;
+  context.fill();
+  context.fillStyle = digitColor;
   if (index >= 0) {
     if (index >= 9)
       x -= 2.5;
-    ctx.fillText(index + 1, x, y);
+    context.fillText(index + 1, x, y);
   }
-  ctx.closePath();
+  context.closePath();
 };
 
-const buildGraphs = (alpha) => {
+const findPoints = (alpha, mainX, mainY, ballRadius, mainRadius, n) => {
   let angle = 0;
-  const color = ballColor;
-  const point = {index: 0, x: mainX, y: mainY}
-  buildCircle(point, ballRadius, color);
+  const point = {index: 0, x: mainX, y: mainY};
+  const points = [];
   points.push({index: 0, x: mainX, y: mainY});
   for (let index = 1; index < n; index++) {
     const x = mainX - (mainRadius * Math.sin(angle));
     const y = mainY - (mainRadius * Math.cos(angle));
     const point = {index, x, y};
     points.push(point);
-    buildCircle(point, ballRadius, color);
     angle += alpha;
+  }
+  console.log({points});
+  return points;
+};
+
+const buildGraphs = (context, points, ballRadius) => {
+  const color = ballColor;
+  for (let index = 0; index < points.length; index++) {
+    const point = points[index];
+    buildCircle(context, point, ballRadius, color);
   }
 };
 
 
-function buildOnArrDirected() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const connections = new Connections();
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < n; j++) {
+function buildOnArrDirected(context, A, points, ballRadius) {
+  // console.clear();
+  console.log({A, points});
+  const connections = new Connections(ballRadius);
+  for (let i = 0; i < A.length; i++) {
+    for (let j = 0; j < A.length; j++) {
       if (A[i][j] === 1) {
-        if (i === j) connections.inItselfDirected(ctx, points[i], ballRadius);
+        if (i === j) connections.inItselfDirected(context, points[i], ballRadius);
         else if (A[j][i] === 1) {
           if ((i > j)) {
-            connections.connectEachOther(ctx, points[i], points[j]);
+            connections.connectEachOther(context, points[i], points[j]);
           }
         } else
-          connections.drawArrowedLine(ctx, points[i], points[j]);
+          connections.drawArrowedLine(context, points[i], points[j]);
       }
     }
   }
-  buildGraphs(alpha);
+  buildGraphs(context, points, ballRadius);
 }
 
-function buildOnArr() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const connections = new Connections();
+function buildOnArr(context, A) {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  const connections = new Connections(ballRadius);
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (A[i][j] === 1) {
-        if (i === j) connections.inItself(ctx, points[i], ballRadius);
+        if (i === j) connections.inItself(context, points[i], ballRadius);
         else
-          connections.connectPoints(points[i], points[j]);
+          connections.connectPoints(context, points[i], points[j]);
       }
     }
   }
-  buildGraphs(alpha);
+  buildGraphs(context, points, ballRadius);
 }
 
-buildGraphs(alpha);
+const points = findPoints(alpha, mainX, mainY, ballRadius, mainRadius, n);
 
-buildOnArrDirected(A);
+buildGraphs(ctx, points);
+
+buildOnArrDirected(ctx, A, points, ballRadius);
 
 /*
 - степені усіх вершин ненапрямленого графу - кількість пов'язаних з вершиною ребер
@@ -512,30 +882,62 @@ function convertInUndirected(A) {
   return B;
 }
 
-function displayText(text) {
+function displayText(context, text) {
+  // canvas2.height = text.length + 1.5 * mainRadius * 2;
   let startX = 10;
   let startY = 15;
   let distance;
   if (windowWidth < 1000) {
-    console.log('smaller');
-    canvas2.height = 12 * text.length + 30;
-    ctx2.font = '10px Arial, serif';
     distance = 12;
+    console.log('smaller');
+    const height = distance * text.length + mainRadius * 3 + 30;
+    if (canvas2.height < height)
+      canvas2.height = height;
+    context.font = '10px Arial, serif';
   } else {
-    ctx2.font = '14px Arial, serif';
     distance = 16;
+    const height = distance * text.length + mainRadius * 3 + 30;
+    if (canvas2.height < height)
+      canvas2.height = height;
+    context.font = '14px Arial, sans-serif';
   }
   for (const str of text) {
-    ctx2.fillText(str, startX, startY);
+    context.fillText(str, startX, startY);
     startY += distance;
   }
 }
 
 function getSecondLab() {
+  clear();
   const secondLab = new SecondLab(A);
   const results = secondLab.getResults();
-  displayText(results);
+  displayText(ctx2, results);
 }
+
+function getThirdLab() {
+  clear();
+  const thirdLab = new ThirdLab(A);
+  thirdLab.displayResults();
+}
+
+
+function clear() {
+  ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+}
+
+// console.log(thirdLab.findWayWithExcludeRepeating(2));
+
+// console.log(thirdLab.findWayWithExcludeRepeating(3));
+
+// const testMatrix = [
+//   [0, 1, 0, 1, 0],
+//   [0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0],
+//   [0, 0, 1, 0, 1],
+//   [0, 1, 0, 0, 0]
+// ];
+//
+// console.log(thirdLab.connectivityMatrix(testMatrix));
 
 //console.log(B);
 
