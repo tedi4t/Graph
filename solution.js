@@ -757,7 +757,7 @@ class ThirdLab {
     const results = this.getResults();
     let positionY;
     if (windowWidth < 1000)
-      positionY = 12 * results.length;
+      positionY = 14 * results.length;
     else positionY = 16 * results.length;
     displayText(ctx2, results);
 
@@ -891,12 +891,12 @@ function displayText(context, text) {
   let startY = 15;
   let distance;
   if (windowWidth < 1000) {
-    distance = 12;
+    distance = 14;
     console.log('smaller');
     const height = distance * text.length + mainRadius * 3 + 30;
     if (canvas2.height < height)
       canvas2.height = height;
-    context.font = '10px Arial, serif';
+    context.font = '12px Arial, serif';
   } else {
     distance = 16;
     const height = distance * text.length + mainRadius * 3 + 30;
