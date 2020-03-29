@@ -759,7 +759,7 @@ class ThirdLab {
     if (windowWidth < 1000)
       positionY = 14 * results.length;
     else positionY = 16 * results.length;
-    displayText(ctx2, results);
+    displayText(ctx2, results, mainRadius * 2.5);
 
     this.buildCondensationGraph(this.A, positionY);
   }
@@ -885,25 +885,33 @@ function convertInUndirected(A) {
   return B;
 }
 
-function displayText(context, text) {
+function displayText(context, text, additionalHeight = 0) {
   // canvas2.height = text.length + 1.5 * mainRadius * 2;
+  const recommendedHeight = canvas.height;
   let startX = 10;
   let startY = 15;
   let distance;
   if (windowWidth < 1000) {
     distance = 14;
     console.log('smaller');
-    const height = distance * text.length + mainRadius * 3 + 30;
+    const height = distance * text.length + additionalHeight + 15;
     if (canvas2.height < height)
       canvas2.height = height;
+    if (height < recommendedHeight)
+      canvas2.height = recommendedHeight;
     context.font = '12px Arial, serif';
   } else {
     distance = 16;
-    const height = distance * text.length + mainRadius * 3 + 30;
+    const height = distance * text.length + additionalHeight + 15;
     if (canvas2.height < height)
       canvas2.height = height;
+    if (height < recommendedHeight)
+      canvas2.height = recommendedHeight;
     context.font = '14px Arial, sans-serif';
   }
+
+  console.log({recommended: recommendedHeight, height: canvas2.height});
+
   for (const str of text) {
     context.fillText(str, startX, startY);
     startY += distance;
@@ -915,50 +923,17 @@ function getSecondLab() {
   const secondLab = new SecondLab(A);
   const results = secondLab.getResults();
   displayText(ctx2, results);
+  console.log(canvas2.width);
 }
 
 function getThirdLab() {
   clear();
   const thirdLab = new ThirdLab(A);
   thirdLab.displayResults();
+  console.log(canvas2.width);
 }
 
 
 function clear() {
   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
 }
-
-// console.log(thirdLab.findWayWithExcludeRepeating(2));
-
-// console.log(thirdLab.findWayWithExcludeRepeating(3));
-
-// const testMatrix = [
-//   [0, 1, 0, 1, 0],
-//   [0, 0, 0, 0, 1],
-//   [1, 0, 0, 0, 0],
-//   [0, 0, 1, 0, 1],
-//   [0, 1, 0, 0, 0]
-// ];
-//
-// console.log(thirdLab.connectivityMatrix(testMatrix));
-
-//console.log(B);
-
-//console.timeEnd('experiment');
-
-/*
-[
-  [0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-  [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1],
-  [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1],
-  [0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0],
-  [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
-  [0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0],
-  [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1]
-]
- */
