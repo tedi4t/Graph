@@ -674,15 +674,15 @@ class ThirdLab {
       angle += alpha;
     }
     buildOnArrDirected(ctx2, condensationMatrix, points, ballRadius);
-    console.log({radius, centreX, centreY, points});
+    // console.log({radius, centreX, centreY, points});
   }
 
   getResults() {
     const secondLab = new SecondLab(this.A);
     const inside = secondLab.edgesInside(this.A);
     const outside = secondLab.edgesOutside(this.A);
-    const waysTwoLength = this.findWayWithExcludeRepeating(2);
-    const waysThreeLength = this.findWayWithExcludeRepeating(3);
+    const waysTwoLength = this.findWay(2);
+    const waysThreeLength = this.findWay(3);
     const reachabilityMatrix = this.reachabilityMatrix(this.A);
     const connectivityMatrix = this.connectivityMatrix(this.A);
     const componentas = this.findComponentas(this.A);
@@ -755,6 +755,7 @@ class ThirdLab {
 
   displayResults() {
     const results = this.getResults();
+    // console.log(results);
     let positionY;
     if (windowWidth < 1000)
       positionY = 14 * results.length;
@@ -803,7 +804,7 @@ const findPoints = (alpha, mainX, mainY, ballRadius, mainRadius, n) => {
     points.push(point);
     angle += alpha;
   }
-  console.log({points});
+  // console.log({points});
   return points;
 };
 
@@ -818,7 +819,6 @@ const buildGraphs = (context, points, ballRadius) => {
 
 function buildOnArrDirected(context, A, points, ballRadius) {
   // console.clear();
-  console.log({A, points});
   const connections = new Connections(ballRadius);
   for (let i = 0; i < A.length; i++) {
     for (let j = 0; j < A.length; j++) {
@@ -893,7 +893,6 @@ function displayText(context, text, additionalHeight = 0) {
   let distance;
   if (windowWidth < 1000) {
     distance = 14;
-    console.log('smaller');
     const height = distance * text.length + additionalHeight + 15;
     if (canvas2.height < height)
       canvas2.height = height;
@@ -910,8 +909,6 @@ function displayText(context, text, additionalHeight = 0) {
     context.font = '14px Arial, sans-serif';
   }
 
-  console.log({recommended: recommendedHeight, height: canvas2.height});
-
   for (const str of text) {
     context.fillText(str, startX, startY);
     startY += distance;
@@ -923,17 +920,50 @@ function getSecondLab() {
   const secondLab = new SecondLab(A);
   const results = secondLab.getResults();
   displayText(ctx2, results);
-  console.log(canvas2.width);
 }
 
 function getThirdLab() {
   clear();
   const thirdLab = new ThirdLab(A);
   thirdLab.displayResults();
-  console.log(canvas2.width);
 }
 
 
 function clear() {
   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
 }
+
+// console.log(thirdLab.findWayWithExcludeRepeating(2));
+
+// console.log(thirdLab.findWayWithExcludeRepeating(3));
+
+// const testMatrix = [
+//   [0, 1, 0, 1, 0],
+//   [0, 0, 0, 0, 1],
+//   [1, 0, 0, 0, 0],
+//   [0, 0, 1, 0, 1],
+//   [0, 1, 0, 0, 0]
+// ];
+//
+// console.log(thirdLab.connectivityMatrix(testMatrix));
+
+//console.log(B);
+
+//console.timeEnd('experiment');
+
+/*
+[
+  [0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+  [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1],
+  [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1],
+  [0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0],
+  [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
+  [0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0],
+  [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1]
+]
+ */
