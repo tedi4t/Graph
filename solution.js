@@ -7,12 +7,14 @@ const ctx = canvas.getContext("2d");
 const canvas2 = document.getElementById("myCanvas2");
 const ctx2 = canvas2.getContext("2d");
 
+let fourthLabCalledInd = 0;
 const cofSmaller = 0.94;
 const cofBigger = 0.42;
 
 document.getElementById('direction').addEventListener('click', changeDirection, null);
 document.getElementById('2Lab').addEventListener('click', getSecondLab, null);
 document.getElementById('3Lab').addEventListener('click', getThirdLab, null);
+document.getElementById('4Lab').addEventListener('click', getFourthLab, null);
 document.getElementById('clear').addEventListener('click', clear, null);
 
 const windowHeight = window.innerHeight;
@@ -48,7 +50,7 @@ const mainRadius = height * 0.4; //building graphs
 const ballRadius = mainRadius * 0.1;
 const alpha = 2 * Math.PI / (n - 1); // building graphs
 const digitColor = '#0e014b';
-const ballColor = '#36bddd';
+const ballColor = '#36bddd', activeColor = '#dd0008', visitedColor = '#80dd47';
 const distanceFromCentre =  1.25 * ballRadius;
 const seed = 9327; // taken from the condition of the problem
 // const points = []; //Array of poins
@@ -61,8 +63,7 @@ ctx.font = `15px Times New Roman`;
 
 ctx2.textBaseline = 'middle';
 ctx2.textAlign = 'center';
-ctx2.font = `15px Times New Roman`;
-
+ctx2.font = `25px sans-serif`;
 
 const A = [
   [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
@@ -78,7 +79,6 @@ const A = [
   [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
-
 
 /*
 second lab
@@ -654,9 +654,6 @@ class ThirdLab {
   }
 
   buildCondensationGraph(matrix, startY) {
-    ctx2.textBaseline = 'middle';
-    ctx2.textAlign = 'center';
-    ctx2.font = `15px Times New Roman`;
     let angle = 0;
     const condensationMatrix = this.buildCondensationMatrix(matrix);
     const radius = mainRadius;
@@ -766,6 +763,109 @@ class ThirdLab {
   }
 }
 
+class FourthLab {
+  constructor(A, ind) {
+    this.A = A;
+    this.unvisitedColor = '#36bddd';
+    this.activeColor = '#dd0008';
+    this.visitedColor = '#80dd47';
+    this.calledInd = ind;
+  }
+
+  generateStepColors(visited, unvisited, active) {
+    const colors = [];
+    visited.map(point => colors[point] = this.visitedColor);
+    unvisited.map(point => colors[point] = this.unvisitedColor);
+    colors[active] = this.activeColor;
+    return colors;
+  }
+
+  getRectMatrix(n) {
+    const A = [];
+    for (let i = 0; i < n; i++) {
+      A.push([]);
+      for (let j = 0; j < n; j++)
+        A[i][j] = 0;
+    }
+    return A;
+  }
+
+  getStepsAndColors(matrix = this.A) {
+    const unvisited = matrix.map((val, index) => index);
+    const steps = [], colorSteps = [], visited = [], waitingPoints = [], stepMatrix = this.getRectMatrix(matrix.length);
+    let active, stepNumb = 1;
+    while (unvisited.length !== 0) {
+      //console.log(steps);
+      if (waitingPoints[0]) {
+        active = waitingPoints[0];
+        waitingPoints.splice(0, 1);
+      } else {
+        active = unvisited[0];
+        unvisited.splice(0, 1);
+      }
+      colorSteps.push(this.generateStepColors(visited, unvisited, active));
+      // console.log(active);
+      if (!steps[active]) steps[active] = stepNumb++;
+      if (!visited.includes(active)) visited.push(active);
+      const activeMatrix = matrix[active];
+      for (const index in activeMatrix) {
+        if (activeMatrix[index] === 1 && !visited.includes(parseInt(index))) {
+          console.log(visited);
+          console.log({active, index});
+          visited.push(parseInt(index));
+          // console.log({active, index});
+          const delInd = unvisited.indexOf(parseInt(index));
+          if (delInd !== -1) unvisited.splice(unvisited.indexOf(parseInt(index)), 1);
+          // console.log(unvisited);
+          if (!waitingPoints.includes(index)) waitingPoints.push(index);
+          if (!steps[index]) {
+            steps[index] = stepNumb++;
+            stepMatrix[active][index] = 1;
+          }
+          colorSteps.push(this.generateStepColors(visited, unvisited, active));
+        }
+      }
+    }
+    console.log(colorSteps);
+    return {steps, colorSteps, stepMatrix};
+  }
+
+  buildGraphs(context, points, ballRadius) {
+    const color = ballColor;
+    for (let index = 0; index < points.length; index++) {
+      const point = points[index];
+      buildCircle(context, point, ballRadius, color);
+    }
+  }
+
+  buildTree(points, matrix) {
+    buildOnArrDirected(ctx2, matrix, points, ballRadius);
+  }
+
+  findInWidth(points, matrix) {
+    buildOnArrDirected(ctx2, matrix, points, ballRadius);
+  }
+
+
+
+  getFourthLab() {
+    canvas2.height = mainRadius * 5;
+    ctx2.textBaseline = 'middle';
+    ctx2.textAlign = 'center';
+    ctx2.font = `15px sans-serif`;
+    const {steps, colorSteps, stepMatrix} = this.getStepsAndColors();
+    const findInWidthPoints = points;
+    const treePoints = [];
+    for (const point of points)
+      treePoints.push({index: point.index, x: point.x, y: point.y + mainRadius * 2 + 100});
+    this.findInWidth(findInWidthPoints, this.A);
+    this.buildTree(treePoints, stepMatrix);
+    const colors = colorSteps[this.calledInd % colorSteps.length];
+    findInWidthPoints.map((point, ind) => buildCircle(ctx2, point, ballRadius, colors[ind]));
+    treePoints.map((point, ind) => buildCircle(ctx2, point, ballRadius, this.unvisitedColor, `${ind + 1} (${steps[ind]})`));
+  }
+}
+
 function changeDirection() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (directed) {
@@ -777,8 +877,9 @@ function changeDirection() {
   }
 }
 
-const buildCircle = (context, point, radius, fillStyle) => {
+const buildCircle = (context, point, radius, fillStyle, text) => {
   let { index, x, y } = point;
+  if (!text) text = index + 1
   context.beginPath();
   context.arc(x, y, radius, 0, Math.PI * 2);
   context.fillStyle = fillStyle;
@@ -787,7 +888,7 @@ const buildCircle = (context, point, radius, fillStyle) => {
   if (index >= 0) {
     if (index >= 9)
       x -= 2.5;
-    context.fillText(index + 1, x, y);
+    context.fillText(text, x, y);
   }
   context.closePath();
 };
@@ -932,6 +1033,14 @@ function getThirdLab() {
 function clear() {
   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
 }
+
+function getFourthLab() {
+  const fourthLab = new FourthLab(A, fourthLabCalledInd++);
+  fourthLab.getFourthLab();
+}
+
+// const fourthLab = new FourthLab(A);
+// fourthLab.getStepsAndColors();
 
 // console.log(thirdLab.findWayWithExcludeRepeating(2));
 
