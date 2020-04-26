@@ -76,22 +76,23 @@ canvas, canvas2 {
 @media screen and (max-width: 600px) {
   .half-container {
     width: 100%;
+    margin: 0;
     position: relative;
   }
 
   .up-button-lab {
     width: 90%;
-    margin: 2% auto;
+    margin: 2% 5% 2% 5%;
   }
 
   .down-button-lab {
     width: 90%;
-    margin: 2% auto;
+    margin: 2% 5% 2% 5%;
   }
 
   .button-direction {
     width: 90%;
-    margin: 2% auto;
+    margin: 0;
   }
 
   .container {
