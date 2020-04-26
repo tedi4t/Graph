@@ -1302,7 +1302,6 @@ function getThirdLab() {
 
 function clear() {
   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-  canvas2.width = canvas2.height;
 }
 
 function getFourthLab() {
