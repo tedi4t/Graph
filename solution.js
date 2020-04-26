@@ -23,14 +23,14 @@ const windowHeight = window.innerHeight;
 const windowWidth = window.innerWidth;
 
 if (windowWidth < 450) {
-  canvas.width = windowWidth * cofSmaller;
+  canvas.width = windowWidth * cofSmaller - 2;
   canvas.height = canvas.width;
-  canvas2.width = windowWidth * cofSmaller;
+  canvas2.width = windowWidth * cofSmaller - 2;
   canvas2.height = canvas.width;
 } else {
-  canvas.width = windowWidth * cofBigger;
+  canvas.width = windowWidth * cofBigger - 2;
   canvas.height = canvas.width;
-  canvas2.width = windowWidth * cofBigger;
+  canvas2.width = windowWidth * cofBigger - 2;
   canvas2.height = canvas.width;
 }
 
@@ -1020,7 +1020,7 @@ class SixthLab {
     this.endColor = '#80dd47';
     this.shortWayColor = '#dd16dd';
     this.longWayColor = '#ddc213';
-    this.index = index;
+    this.index = index % this.A.length;
   }
 
   findWay (from, to, shortest = true) {
@@ -1120,18 +1120,13 @@ class SixthLab {
     const shortestWeight = shortestAll[this.index].weight;
     const longestWay = longestAll[this.index].route;
     const longestWeight = longestAll[this.index].weight;
-    // console.clear();
-    // console.log(longestAll);
-    // console.log(longest[0]);
-    // console.log(longest);
     buildCircle(ctx2, points[longestWay[0]], ballRadius, this.startColor);
     buildCircle(ctx2, points[longestWay[longestWay.length - 1]], ballRadius, this.endColor);
-    // for (let index = 1; index < shortest.length - 1; index++)
-    //   buildCircle(ctx2, points[shortest[index]], ballRadius, this.shortWayColor);
-    for (let index = 1; index < longestWay.length - 1; index++) {
-      // console.log(index);
+    // for (let index = 1; index < shortestWay.length - 1; index++)
+    //   buildCircle(ctx2, points[shortestWay[index]], ballRadius, this.shortWayColor);
+    for (let index = 1; index < longestWay.length - 1; index++)
       buildCircle(ctx2, points[longestWay[index]], ballRadius, this.longWayColor);
-    }
+
   }
 }
 
@@ -1312,12 +1307,16 @@ function getFourthLab() {
 }
 
 function getFifthLab() {
+  console.log({5: points});
   clear();
   const fifthLab = new FifthLab(A, weights, fifthLabCalledInd++);
   fifthLab.getLab();
 }
 
 function getSixthLab() {
+  clear();
+  canvas2.height = canvas2.width;
+  console.log({6: points});
   const sixthLab = new SixthLab(A, weights, sixLabCalledInd++);
   sixthLab.getLab();
   // console.log(sixthLab.findWay(points[1], points[11], false));
