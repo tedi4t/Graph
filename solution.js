@@ -881,7 +881,9 @@ class FourthLab {
   }
 
   getFourthLab() {
-    canvas2.height = mainRadius * 5;
+    if (windowWidth < 600)
+      canvas2.height = mainRadius * 6;
+    else canvas2.height = mainRadius * 5;
     ctx2.textBaseline = 'middle';
     ctx2.textAlign = 'center';
     ctx2.font = `15px sans-serif`;
@@ -987,7 +989,9 @@ class FifthLab {
   }
 
   getLab() {
-    canvas2.height = mainRadius * 5;
+    if (windowWidth < 600)
+      canvas2.height = mainRadius * 6;
+    else canvas2.height = mainRadius * 5;
     ctx2.textBaseline = 'middle';
     ctx2.textAlign = 'center';
     ctx2.font = `15px sans-serif`;
@@ -1298,7 +1302,7 @@ function getThirdLab() {
 
 function clear() {
   ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
-  canvas2.height = canvas2.width;
+  canvas2.width = canvas2.height;
 }
 
 function getFourthLab() {
