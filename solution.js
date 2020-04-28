@@ -1020,9 +1020,9 @@ class SixthLab {
     this.imiginary_weight = 99999999;
     this.startColor = '#ff0007';
     this.endColor = '#80dd47';
-    this.shortWayColor = '#dd16dd';
+    this.shortWayColor = '#ddc213';
     this.textColor = '#dd0008';
-    this.longWayColor = '#ddc213';
+    this.longWayColor = '#dd16dd';
     this.index = index % this.A.length;
   }
 
