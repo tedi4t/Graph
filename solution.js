@@ -915,6 +915,7 @@ class FifthLab {
   drawGraph(points, A = this.A) {
     const connections = new Connections(ballRadius);
     const len = A.length;
+    buildOnArr(ctx2, A, points);
     for (let i = 0; i < len; i++) {
       for (let j = 0; j < len; j++) {
         if (A[i][j] === 1 && points[i] && points[j]) {
@@ -926,12 +927,11 @@ class FifthLab {
           ctx2.fillStyle = this.textColor;
           ctx2.textBaseline = 'middle';
           ctx2.textAlign = 'center';
-          ctx2.font = `23px sans-serif`;
+          ctx2.font = `15px sans-serif`;
           ctx2.fillText(this.weights[i][j], coordinates.x, coordinates.y);
         }
       }
     }
-    buildOnArr(ctx2, A, points);
   }
 
   generateMatrix(n) {
@@ -1023,10 +1023,19 @@ class SixthLab {
     this.shortWayColor = '#ddc213';
     this.textColor = '#dd0008';
     this.longWayColor = '#dd16dd';
-    this.index = index % this.A.length;
+    this.index = index;
+  }
+
+  createArr (constants, temporary, active) {
+    const arr = [...points];
+    constants.map(point => arr[point.index] = this.longWayColor);
+    temporary.map(point => arr[point.index] = ballColor);
+    arr[active.index] = this.startColor;
+    return arr;
   }
 
   findWay (from, to, shortest = true) {
+    const steps = [];
     // console.log(this.weights);
     const activeList = [from];
     const constantPoints = [from], temporaryPoints = [...points].filter(point => point.index !== from.index), previousPoints = [],
@@ -1069,14 +1078,15 @@ class SixthLab {
           pointIndInArr = ind;
         }
       }
-      if (minInd === to.index)
-        reached = true;
       // console.log(minInd);
       if (minInd != undefined) {
         temporaryPoints.splice(pointIndInArr, 1);
         constantPoints.push(points[minInd]);
         activeList.push(points[minInd]);
       }
+      if (minInd === to.index)
+        reached = true;
+      steps.push({colors: this.createArr(constantPoints, temporaryPoints, active), len: [...wayLength]});
     }
     if (reached) {
       let currentInd = to.index;
@@ -1086,7 +1096,7 @@ class SixthLab {
         currentInd = previousPoints[currentInd];
       }
       way.unshift(currentInd);
-      return {weight: wayLength[to.index], route: way};
+      return steps;
     }
   }
 
@@ -1116,7 +1126,7 @@ class SixthLab {
   }
 
   findAllWays() {
-    const shortestWaysForAllPoints = [];
+    const steps = [];
     for (let i = 0; i < this.A.length; i++) {
       let from = 0;
       let shortestWay = this.findWay(points[from], points[i]);
@@ -1124,9 +1134,9 @@ class SixthLab {
         from++;
         shortestWay = this.findWay(points[from], points[i]);
       }
-      shortestWaysForAllPoints.push(shortestWay ? shortestWay : []);
+      steps.push(...shortestWay);
     }
-    return shortestWaysForAllPoints;
+    return steps;
   }
 
   getLab() {
@@ -1134,13 +1144,12 @@ class SixthLab {
     // console.log(shortestAll);
     const fifthLab = new FifthLab(this.A, this.weights);
     fifthLab.drawGraph(points);
-    const shortestWay = shortestAll[this.index].route;
-    const shortestWeight = shortestAll[this.index].weight;
-    buildCircle(ctx2, points[shortestWay[0]], ballRadius, this.startColor);
-    buildCircle(ctx2, points[shortestWay[shortestWay.length - 1]], ballRadius, this.endColor);
-    for (let index = 1; index < shortestWay.length - 1; index++)
-      buildCircle(ctx2, points[shortestWay[index]], ballRadius, this.shortWayColor);
-      }
+    const shortestWay = shortestAll[this.index % shortestAll.length].colors;
+    const wayLen = shortestAll[this.index % shortestAll.length].len;
+    console.log(wayLen);
+    for (let index = 0; index < shortestWay.length; index++)
+      buildCircle(ctx2, points[index], ballRadius, shortestWay[index]);
+  }
 }
 
 function changeDirection() {
